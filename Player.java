@@ -1,15 +1,23 @@
+/**
+ * The player for the game. Very basic.
+ *
+ * @author Per Nyberg
+ * @version 2017.04.11
+ * @last_updated 2017.04.15
+ */
+
 import java.awt.Color;
 import java.awt.Graphics;
 
-/**
- * The player for the game. Very basic.
- */
 public class Player {
 	public static int size = 20; // same size for all players
 
 	private int x, y;
-	private boolean up;
+	private boolean up, down, left, right;
 
+	/**
+	 * Set starting position. All movement false in beginning.
+	 */
 	public Player(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -33,6 +41,27 @@ public class Player {
 	 */
 	public void moveUp(boolean up) {
 		this.up = up;
+	}
+
+	/**
+	 * @param down 	whether or not the player moves down
+	 */
+	public void moveDown(boolean down) {
+		this.down = down;
+	}
+
+	/**
+	 * @param left 	whether or not the player moves left
+	 */
+	public void moveLeft(boolean left) {
+		this.left = left;
+	}
+
+	/**
+	 * @param right 	whether or not the player moves right
+	 */
+	public void moveRight(boolean right) {
+		this.right = right;
 	}
 
 	/**
@@ -65,6 +94,27 @@ public class Player {
 	 */
 	public boolean getUpMovement() {
 		return up;
+	}
+
+	/**
+	 * @return 	if the player is moving down
+	 */
+	public boolean getDownMovement() {
+		return down;
+	}
+
+	/**
+	 * @return 	if the player is moving left
+	 */
+	public boolean getLeftMovement() {
+		return left;
+	}
+
+	/**
+	 * @return 	if the player is moving right
+	 */
+	public boolean getRightMovement() {
+		return right;
 	}
 
 	/**
