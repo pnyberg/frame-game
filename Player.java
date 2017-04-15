@@ -13,7 +13,7 @@ public class Player {
 	public static int size = 20; // same size for all players
 
 	private int x, y;
-	private boolean up, down, left, right;
+	private boolean up, left, right;
 
 	/**
 	 * Set starting position. All movement false in beginning.
@@ -23,6 +23,8 @@ public class Player {
 		this.y = y;
 
 		up = false;
+		left = false;
+		right = false;
 	}
 
 	/**
@@ -41,13 +43,6 @@ public class Player {
 	 */
 	public void moveUp(boolean up) {
 		this.up = up;
-	}
-
-	/**
-	 * @param down 	whether or not the player moves down
-	 */
-	public void moveDown(boolean down) {
-		this.down = down;
 	}
 
 	/**
@@ -94,13 +89,6 @@ public class Player {
 	 */
 	public boolean getUpMovement() {
 		return up;
-	}
-
-	/**
-	 * @return 	if the player is moving down
-	 */
-	public boolean getDownMovement() {
-		return down;
 	}
 
 	/**
