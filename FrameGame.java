@@ -3,6 +3,7 @@
  *
  * @author Per Nyberg
  * @version 2017.04.16
+ * @last_updated 2017.04.17
  */
 
 import java.awt.GraphicsDevice;
@@ -369,10 +370,9 @@ public class FrameGame extends JFrame implements KeyListener {
 	 */
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_UP) {
-			player.moveUp(true);
-		}
-		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-			player.moveDown(true);
+			if (player.mayJump()) {
+				player.jump();
+			}
 		}
 		if (e.getKeyCode() == KeyEvent.VK_LEFT) {
 			player.moveLeft(true);
@@ -387,10 +387,9 @@ public class FrameGame extends JFrame implements KeyListener {
 	 */
 	public void keyReleased(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_UP) {
-			player.moveUp(false);
-		}
-		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-			player.moveDown(false);
+			if (!player.isMovingDown()) {
+				player.stopJump();
+			}
 		}
 		if (e.getKeyCode() == KeyEvent.VK_LEFT) {
 			player.moveLeft(false);

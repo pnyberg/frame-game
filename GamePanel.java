@@ -3,7 +3,7 @@
  *
  * @author Per Nyberg
  * @version 2017.04.11
- * @last_updated 2017.04.15
+ * @last_updated 2017.04.17
  */
 
 import java.awt.Color;
@@ -71,91 +71,232 @@ public class GamePanel extends JPanel {
 	/**
 	 * Handle movement for the player, like gravity for instance
 	 * @todo
-	 * - add collision-bounds for alla directions (not only down)
-	 * - fix so that gravity accelerates/deaccelerate upward movement
+	 * - jump up into block-fail
+	 * - simplify movement-code
 	 * 
-	 * @param p		the player which is handled
+	 * @param player			the player which is handled
 	 *
 	 * @return playerRemoved 	if the player is moved to another frame or not
 	 */
-	private boolean movePlayer(Player p) {
-		int playerSpeed = blockSize / 4; // temporary speed
-		boolean gravity = true; // temporary gravity
-		boolean playerRemoved = false;
+	private boolean movePlayer(Player player) {
+		int px = player.getX();
+		int py = player.getY();
+		int playerSize = Player.size;
 
-		// handle up-down-movement
-		if (p.getUpMovement()) {
-			gravity = false;
+		int xSpeed = player.getHorisontalSpeed();
+		int ySpeed = player.getVerticalSpeed();
 
-			if (p.getY() > 0) {
-				p.move(0, -playerSpeed);
+		boolean gravity = true;
+
+		if (xSpeed == 0 && ySpeed == 0) {
+			int oy = (py + playerSize) / blockSize;
+
+			if (oy < blockHeight) {
+				for (int ox = px/blockSize ; ox <= (px + playerSize - 1)/blockSize ; ox++) {
+					if (map[oy][ox] == 1) {
+						gravity = false;
+						break;
+					}
+				}
+			} else {
+				gravity = false;
 			}
-		} else if (p.getDownMovement()) {
-			p.move(0, playerSpeed);
-		}
+		} else {
+			boolean walled = false;
 
-		// handle left-right-movement
-		if (p.getLeftMovement()) {
-			p.move(-playerSpeed, 0);
-		} else if (p.getRightMovement()) {
-			p.move(playerSpeed, 0);
-		}
+			if (xSpeed < 0) { // left
+				if ((px - Math.abs(xSpeed)) < 0) { // left-wall
+					player.setPosition(0, py);
+					walled = true;
+				}
 
-		// if the player is att the bottom of the screen then gravity is deactivated
-		if (p.getY() == (blockHeight-1) * blockSize) {
-			gravity = false;
-		}
+				for (int ox = px/blockSize ; ox >= (px - Math.abs(xSpeed) - 1)/blockSize ; ox--) {
+					if (ox < 0) {
+						break;
+					}
+					if (walled) {
+						break;
+					}
+					for (int oy = py/blockSize ; oy <= (py + playerSize - 1)/blockSize ; oy++) {
+						if (oy >= blockHeight) {
+							break;
+						}
+						if (map[oy][ox] == 1) {
+							player.setPosition((ox+1) * blockSize, py);
+							walled = true;
+							break;
+						}
+					}
+				}
 
-		// go through the map and check collision with all objects
-		for (int y = 0 ; y < map.length ; y++) {
-			if (!gravity) {
-				break;
+				int oy = (py + playerSize) / blockSize;
+
+				for (int ox = px/blockSize ; ox <= (px + playerSize - 1)/blockSize ; ox++) {
+					if (ox >= blockWidth || oy >= blockHeight) {
+						break;
+					}
+					if (map[oy][ox] == 1) {
+						gravity = false;
+						break;
+					}
+				}
+			} else if (xSpeed > 0) { // right
+				if ((px + playerSize + xSpeed) >= (blockWidth * blockSize)) { // right-wall
+					player.setPosition((blockWidth-1) * blockSize, py);
+					walled = true;
+				}
+
+				int px_end = px + playerSize;
+				for (int ox = px_end/blockSize ; ox <= (px_end + xSpeed - 1)/blockSize ; ox++) {
+					if (ox >= blockWidth) {
+						break;
+					}
+					if (walled) {
+						break;
+					}
+					for (int oy = py/blockSize ; oy <= (py + playerSize - 1)/blockSize ; oy++) {
+						if (oy >= blockHeight) {
+							break;
+						}
+						if (map[oy][ox] == 1) {
+							player.setPosition((ox-1) * blockSize, py);
+							walled = true;
+							break;
+						}
+					}
+				}
+
+				int oy = (py + playerSize) / blockSize;
+				if (oy < map.length) {
+					for (int ox = px/blockSize ; ox <= (px + playerSize - 1)/blockSize ; ox++) {
+						if (ox >= blockWidth) {
+							break;
+						}
+						if (map[oy][ox] == 1) {
+							gravity = false;
+							break;
+						}
+					}
+				}
 			}
 
-			for (int x = 0 ; x < map[y].length ; x++) {
-				if (map[y][x] == 1 && p.getY() <= (y * blockSize) && (p.getY() + Player.size) >= (y * blockSize) && 
-					(((x * blockSize) <= p.getX() && p.getX() < ((x+1) * blockSize)) || 
-					 ((x * blockSize) < (p.getX() + Player.size) && (p.getX() + Player.size) <= ((x+1) * blockSize)))) {
+			if (!walled) {
+				player.move(xSpeed, 0);
+			}
+			if (ySpeed < 0) { // jumping
+				boolean roofed = false;
+
+				if ((py - Math.abs(ySpeed)) < 0) { // roof
+					player.setPosition(px, 0);
+					if (!upConnect) {
+						player.stopVerticalMovement();
+					}
+					roofed = true;
+				}
+
+				for (int oy = py/blockSize ; oy >= (py - Math.abs(ySpeed) + 1)/blockSize ; oy--) {
+					if (oy < 0) {
+						break;
+					}
+					if (roofed) {
+						break;
+					}
+					for (int ox = px/blockSize ; ox <= (px + playerSize - 1)/blockSize ; ox++) {
+						if (ox >= blockWidth) {
+							break;
+						}
+						if (map[oy][ox] == 1) {
+							player.setPosition(px, (oy+1) * blockSize);
+							player.stopVerticalMovement();
+							roofed = true;
+							break;
+						}
+					}
+				}
+
+				if (!roofed) {
+					player.move(0, ySpeed);
+				}
+			} else if (ySpeed > 0) { // gravity
+				if ((py + playerSize + ySpeed) >= (blockHeight * blockSize)) { // floor
+					player.setPosition(px, (blockHeight - 1) * blockSize);
+					if (!downConnect) {
+						player.stopVerticalMovement();
+					}
 					gravity = false;
-					break;
+				}
+
+				int py_end = py + playerSize;
+				for (int oy = py_end/blockSize ; oy <= (py_end + ySpeed - 1)/blockSize ; oy++) {
+					if (oy >= blockHeight) {
+						break;
+					}
+					if (!gravity) {
+						break;
+					}
+					for (int ox = px/blockSize ; ox <= (px + playerSize - 1)/blockSize ; ox++) {
+						if (ox >= blockWidth) {
+							break;
+						}
+						if (map[oy][ox] == 1) {
+							player.setPosition(px, (oy-1) * blockSize);
+							gravity = false;
+							player.stopVerticalMovement();
+							break;
+						}
+					}
+				}
+
+				if (gravity) {
+					player.move(0, ySpeed);
 				}
 			}
 		}
-
-		// gravity should always be activated
-		// but instead of full speed "accelerating" downwards
 		if (gravity) {
-			p.move(0, playerSpeed);
+			player.gravitize();
 		}
 
-		// handles movement of the player between frames
-		if (downConnect && p.getY() == (blockHeight-1) * blockSize) {
-			p.setPosition(p.getX(), 0);
-			downFrame.addPlayer(p);
-			thisFrame.removePlayer(p);
-
-			playerRemoved = true;
-		} else if (upConnect && p.getY() == 0) {
-			p.setPosition(p.getX(), (blockHeight-1) * blockSize);
-			upFrame.addPlayer(p);
-			thisFrame.removePlayer(p);
-
-			playerRemoved = true;
-		} else if (leftConnect && p.getX() == 0) {
-			p.setPosition((blockWidth-1) * blockSize, p.getY());
-			leftFrame.addPlayer(p);
-			thisFrame.removePlayer(p);
-
-			playerRemoved = true;
-		} else if (rightConnect && p.getX() == (blockWidth-1) * blockSize) {
-			p.setPosition(0, p.getY());
-			rightFrame.addPlayer(p);
-			thisFrame.removePlayer(p);
-
-			playerRemoved = true;
-		}
-
+		boolean playerRemoved = handleFrameTransition(player);
 		return playerRemoved;
+	}
+
+	/**
+	 * Handles movement of the player between frames
+	 *
+	 * @param player 	the player who's possibly jumping between frames
+	 *
+	 * @return 			if the player is moved to another frame
+	 */
+	private boolean handleFrameTransition(Player player) {
+		int transAdd = 2; // extra movement when going through "portal"
+
+		if (downConnect && player.getY() == (blockHeight-1) * blockSize) {
+			player.setPosition(player.getX(), 0+transAdd);
+			downFrame.addPlayer(player);
+			thisFrame.removePlayer(player);
+
+			return true;
+		} else if (upConnect && player.getY() == 0) {
+			player.setPosition(player.getX(), (blockHeight-1) * blockSize - transAdd);
+			upFrame.addPlayer(player);
+			thisFrame.removePlayer(player);
+
+			return true;
+		} else if (leftConnect && player.getX() == 0) {
+			player.setPosition((blockWidth-1) * blockSize - transAdd, player.getY());
+			leftFrame.addPlayer(player);
+			thisFrame.removePlayer(player);
+
+			return true;
+		} else if (rightConnect && player.getX() == (blockWidth-1) * blockSize) {
+			player.setPosition(0+transAdd, player.getY());
+			rightFrame.addPlayer(player);
+			thisFrame.removePlayer(player);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

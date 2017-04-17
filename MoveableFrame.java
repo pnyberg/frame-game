@@ -3,6 +3,7 @@
  *
  * @author Per Nyberg
  * @version 2017.04.15
+ * @last_updated 2017.04.17
  */
 
 import javax.swing.JFrame;

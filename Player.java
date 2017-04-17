@@ -3,17 +3,21 @@
  *
  * @author Per Nyberg
  * @version 2017.04.11
- * @last_updated 2017.04.15
+ * @last_updated 2017.04.17
  */
 
 import java.awt.Color;
 import java.awt.Graphics;
 
 public class Player {
+	// constants used
+//---------------------------------------------------
+	public final static int playerSpeed = 5; // same speed for all players
+//---------------------------------------------------
 	public static int size = 20; // same size for all players
 
-	private int x, y;
-	private boolean up, left, right;
+	private int x, y, gravity;
+	private boolean left, right, falling, setGravityToZero;
 
 	/**
 	 * Set starting position. All movement false in beginning.
@@ -22,27 +26,56 @@ public class Player {
 		this.x = x;
 		this.y = y;
 
-		up = false;
+		gravity = 0;
+
+		left = false;
+		right = false;
+		falling = false;
+		setGravityToZero = false;
+	}
+
+	/**
+	 * Set the speed for up-movement
+	 */
+	public void jump() {
+		gravity = -(playerSpeed * 2 + 1);
+		falling = true;
+	}
+
+	/**
+	 * Method for adjusting movement in up/down-directions
+	 */
+	public void gravitize() {
+		if (setGravityToZero) {
+			setGravityToZero = false;
+			gravity = 0;
+		} else {
+			gravity++;
+		}
+	}
+
+	/**
+	 * Stop left/right-movement
+	 */
+	public void stopHorisontalMovement() {
 		left = false;
 		right = false;
 	}
 
 	/**
-	 * Move the player with given values
-	 *
-	 * @param addX 	the change in x-coordinate
-	 * @param addY 	the change in y-coordinate
+	 * Stop up/down-movement
 	 */
-	public void move(int addX, int addY) {
-		x += addX;
-		y += addY;
+	public void stopVerticalMovement() {
+		gravity = 0;
+		falling = false;
 	}
 
 	/**
-	 * @param up 	whether or not the player moves up
+	 * Stop jump-before
 	 */
-	public void moveUp(boolean up) {
-		this.up = up;
+	public void stopJump() {
+		gravity /= 2;
+		setGravityToZero = true;
 	}
 
 	/**
@@ -57,6 +90,17 @@ public class Player {
 	 */
 	public void moveRight(boolean right) {
 		this.right = right;
+	}
+
+	/**
+	 * Adjust position for the player
+	 *
+	 * @param addX 	the movement along the x-axis
+	 * @param addY 	the movement along the y-axis
+	 */
+	public void move(int addX, int addY) {
+		x += addX;
+		y += addY;
 	}
 
 	/**
@@ -85,23 +129,52 @@ public class Player {
 	}
 
 	/**
+	 * @return 	the speed for the player in left/right-direction (negative for left)
+	 */
+	public int getHorisontalSpeed() {
+		return (left ? -playerSpeed : (right ? playerSpeed : 0));
+	}
+
+	/**
+	 * @return 	the speed for the player in up/down-direction (negative for up)
+	 */
+	public int getVerticalSpeed() {
+		return gravity;
+	}
+
+	/**
+	 * Check if the player may jump (again)
+	 * The player may only jump if it's not falling or already jumping
+	 */
+	public boolean mayJump() {
+		return gravity == 0 && !falling;
+	}
+
+	/**
 	 * @return 	if the player is moving up
 	 */
-	public boolean getUpMovement() {
-		return up;
+	public boolean isMovingUp() {
+		return gravity < 0;
+	}
+
+	/**
+	 * @return 	if the player is moving down
+	 */
+	public boolean isMovingDown() {
+		return gravity > 0;
 	}
 
 	/**
 	 * @return 	if the player is moving left
 	 */
-	public boolean getLeftMovement() {
+	public boolean isMovingLeft() {
 		return left;
 	}
 
 	/**
 	 * @return 	if the player is moving right
 	 */
-	public boolean getRightMovement() {
+	public boolean isMovingRight() {
 		return right;
 	}
 
