@@ -1,9 +1,14 @@
 /**
  * The panel used by every frame to paint the gameboard
  *
+ * @todo
+ * - simplify movement-code in movePlayer()-method
+ * - investigate jump-bug
+ * - possibly investigate control-consistency (smooth movement?)
+ *
  * @author Per Nyberg
  * @version 2017.04.11
- * @last_updated 2017.04.17
+ * @last_updated 2017.04.18
  */
 
 import java.awt.Color;
@@ -70,9 +75,7 @@ public class GamePanel extends JPanel {
 
 	/**
 	 * Handle movement for the player, like gravity for instance
-	 * @todo
-	 * - jump up into block-fail
-	 * - simplify movement-code
+	 * @todo Obviously ugly code but I got pissed off so..
 	 * 
 	 * @param player			the player which is handled
 	 *
