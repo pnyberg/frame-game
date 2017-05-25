@@ -1,4 +1,0 @@
-* Fix movement
-* Add weapons
-* Add multiplayer-capability
-* Add more features (like flags, bases, etc)
